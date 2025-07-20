@@ -46,7 +46,8 @@ async def handle_message(msg):
     return {
         "task_id": task_id,
         "ts": ts,
-        "minio_key": minio_key
+        "minio_key": minio_key,
+        "wb_token": api_token,
     }
 
 
