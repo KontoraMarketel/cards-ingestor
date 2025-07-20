@@ -4,8 +4,8 @@ services:
       context: .
       dockerfile: Dockerfile
     environment:
-      KAFKA_CONSUMER_TOPIC: ingest-prices-tasks
-      KAFKA_PRODUCER_STG_PRICES_TASKS: stg-prices-tasks
+      KAFKA_CONSUMER_TOPIC: ingest-cards-tasks
+      KAFKA_PRODUCER_STG_PRICES_TASKS: stg-cards-tasks
       KAFKA_BOOTSTRAP_SERVERS: kafka-compose-kafka-broker-1:9092
       MINIO_ENDPOINT: http://minio:9000
       MINIO_ACCESS_KEY: minioadmin
