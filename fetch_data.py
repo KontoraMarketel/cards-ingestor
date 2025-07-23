@@ -1,3 +1,4 @@
+import asyncio
 import logging
 
 import aiohttp
@@ -25,24 +26,33 @@ async def fetch_data(api_token: str) -> list:
             if cursor:
                 payload["settings"]["cursor"].update(cursor)
 
-            async with session.post(GET_ALL_CARDS, json=payload) as response:
-                data = await response.json()
-                if response.status != 200:
-                    logging.error(f"Error fetching cards: {response.status}, {data}")
-                    response.raise_for_status()
+            data = await fetch_page_with_retry(session, GET_ALL_CARDS, payload)
 
-                cards = data.get("cards", [])
-                cursor_data = data.get("cursor", {})
-                total = cursor_data.get("total", 0)
+            cards = data.get("cards", [])
+            cursor_data = data.get("cursor", {})
+            total = cursor_data.get("total", 0)
 
-                all_cards.extend(cards)
+            all_cards.extend(cards)
 
-                if total == 0:
-                    break
+            if total == 0:
+                break
 
-                cursor = {
-                    "updatedAt": cursor_data.get("updatedAt"),
-                    "nmID": cursor_data.get("nmID")
-                }
+            cursor = {
+                "updatedAt": cursor_data.get("updatedAt"),
+                "nmID": cursor_data.get("nmID")
+            }
 
     return all_cards
+
+
+async def fetch_page_with_retry(session, url, payload):
+    while True:
+        async with session.post(url, json=payload) as response:
+            if response.status == 429:
+                retry_after = int(response.headers.get('X-Ratelimit-Retry', 10))
+                logging.warning(f"Rate limited (429). Retrying after {retry_after} seconds...")
+                await asyncio.sleep(retry_after)
+                continue
+
+            response.raise_for_status()
+            return await response.json()
