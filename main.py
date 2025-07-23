@@ -69,6 +69,11 @@ async def process_and_produce(msg_value, producer, minio_pool: MinioClientPool):
                 value=next_msg,
                 key=encoded_task_id,
             )
+            await producer.send(
+                PRODUCER_INGEST_SALES_TOPIC,
+                value=next_msg,
+                key=encoded_task_id,
+            )
         except Exception as e:
             logging.error(f"Error processing message: {e}")
             # TODO: write task to out of the box table
